@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: quzen_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: quzen
+      POSTGRES_PASSWORD: quzen_secret
+      POSTGRES_DB: quzen_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - quzen_postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: quzen_redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - quzen_redis_data:/data
+
+volumes:
+  quzen_postgres_data:
+  quzen_redis_data:

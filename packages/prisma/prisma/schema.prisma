@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Role {
+  USER
+  BUSINESS_OWNER
+  ADMIN
+}
+
+enum Sector {
+  DIAGNOSTIC
+  HOSPITAL
+  BANK
+  RESTAURANT
+  SALON
+  VEHICLE_SERVICE
+}
+
+enum SessionStatus {
+  ACTIVE
+  CLOSED
+}
+
+enum TokenStatus {
+  WAITING
+  ARRIVED
+  IN_SERVICE
+  COMPLETED
+  SKIPPED
+  CANCELLED
+}
+
+enum SignalType {
+  ARRIVED
+  COMPLETED
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  phone         String?
+  passwordHash  String
+  role          Role     @default(USER)
+  fcmToken      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tokens         Token[]
+  feedbackSignals FeedbackSignal[]
+  notifications  Notification[]
+  businesses     Business[]
+
+  @@map("users")
+}
+
+model Business {
+  id        String   @id @default(cuid())
+  ownerId   String
+  name      String
+  sector    Sector
+  address   String
+  city      String
+  latitude  Float?
+  longitude Float?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner      User              @relation(fields: [ownerId], references: [id])
+  categories ServiceCategory[]
+  sessions   QueueSession[]
+
+  @@map("businesses")
+}
+
+model ServiceCategory {
+  id                 String   @id @default(cuid())
+  businessId         String
+  name               String
+  avgDurationMinutes Int      @default(10)
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+
+  business Business @relation(fields: [businessId], references: [id])
+  tokens   Token[]
+
+  @@map("service_categories")
+}
+
+model QueueSession {
+  id         String        @id @default(cuid())
+  businessId String
+  date       DateTime      @db.Date
+  status     SessionStatus @default(ACTIVE)
+  openedAt   DateTime      @default(now())
+  closedAt   DateTime?
+
+  business Business @relation(fields: [businessId], references: [id])
+  tokens   Token[]
+
+  @@unique([businessId, date])
+  @@map("queue_sessions")
+}
+
+model Token {
+  id               String      @id @default(cuid())
+  sessionId        String
+  userId           String
+  categoryId       String
+  tokenNumber      Int
+  status           TokenStatus @default(WAITING)
+  estimatedWaitMin Int
+  issuedAt         DateTime    @default(now())
+  arrivedAt        DateTime?
+  completedAt      DateTime?
+
+  session  QueueSession    @relation(fields: [sessionId], references: [id])
+  user     User            @relation(fields: [userId], references: [id])
+  category ServiceCategory @relation(fields: [categoryId], references: [id])
+
+  feedbackSignals FeedbackSignal[]
+  notifications   Notification[]
+
+  @@map("tokens")
+}
+
+model FeedbackSignal {
+  id         String     @id @default(cuid())
+  tokenId    String
+  userId     String
+  signalType SignalType
+  createdAt  DateTime   @default(now())
+
+  token Token @relation(fields: [tokenId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@map("feedback_signals")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenId   String?
+  message   String
+  isRead    Boolean  @default(false)
+  sentAt    DateTime @default(now())
+
+  user  User   @relation(fields: [userId], references: [id])
+  token Token? @relation(fields: [tokenId], references: [id])
+
+  @@map("notifications")
+}

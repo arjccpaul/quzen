@@ -1,0 +1,66 @@
+﻿Zequvo (Smart Queue & Flow Management
+System)
+
+1. Project Overview
+Zequvo is a real-time smart queue and customer flow management platform that allows users to
+take virtual tokens remotely, track waiting time, and receive predictive estimates. Businesses
+manage customer flow efficiently while improving experience.
+
+2. Core Idea
+The system reduces physical waiting by enabling digital token generation, real-time queue tracking,
+and predictive ETA updates based on service progress and user confirmation signals.
+
+3. User Flow
+1. User selects sector (Hospital, Diagnostic, Bank, etc.) 2. Chooses location and service center 3.
+Selects category/sub-category 4. Receives token number 5. Views estimated waiting time 6. Gets
+live updates via notifications 7. Arrives at location when notified or near ETA 8. Marks completion
+feedback
+
+4. Business Owner Flow
+1. Business registers on platform 2. Adds service categories and subcategories 3. Starts queue
+session 4. Issues or auto-generates tokens 5. Updates status (or system auto-tracks via user
+confirmation) 6. Manages customer flow dashboard in real time
+
+
+
+5. Supported Sectors (Phase 1)
+
+A. Diagnostic Centers
+Categories: Blood Test, Urine Test, X-Ray, MRI, General Checkup
+
+B. Hospitals & Clinics
+Categories: OPD, Emergency, Specialist Consultation, Follow-up
+
+C. Banks
+Categories: Account Opening, Loan, Cash Withdrawal, KYC
+
+D. Restaurants
+Categories: Table Booking, Takeaway, Billing Counter
+
+E. Salons & Parlours
+Categories: Haircut, Spa, Facial, Grooming
+
+F. Vehicle Service Centers
+Categories: Bike Service, Car Service, Repair, Inspection
+
+6. System Architecture
+Frontend: Next.js / React Web App + Optional React Native Mobile App Backend: Node.js with
+NestJS Database: PostgreSQL Cache & Queue: Redis Realtime: WebSockets (Socket.io)
+Notifications: Firebase Cloud Messaging (FCM) + Email/SMS Gateway Hosting: Vercel (Frontend)
++ AWS / DigitalOcean (Backend)
+
+7. Token & Queue Logic
+Token generation is sequential per service category. Estimated time is calculated based on
+average service duration and live updates from completed or marked sessions. System improves
+accuracy using user-arrival signals and completion feedback.
+
+
+
+8. Phase 2 Expansion
+Phase 2 introduces AI-based prediction engine, smart crowd analytics, auto check-in via
+geolocation, digital appointment scheduling, business intelligence dashboard, and dynamic load
+balancing across branches.
+
+9. Advanced Features
+- Real-time queue updates - Smart ETA prediction - Geo-fencing arrival detection - Multi-branch
+support - Admin analytics dashboard - Customer feedback loop - Peak hour prediction engine
