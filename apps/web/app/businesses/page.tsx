@@ -3,6 +3,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Navbar } from '@/components/navbar';
+import { SECTOR_META } from '@/lib/sector-categories';
 import api from '@/lib/api';
 
 const SECTOR_LABELS: Record<string, string> = {
@@ -52,15 +53,16 @@ function BusinessesList() {
             href={`/businesses/${b.id}`}
             className="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:border-indigo-300 hover:shadow-md transition flex flex-col"
           >
-            {b.imageUrl ? (
-              <img
-                src={b.imageUrl}
-                alt={b.name}
-                className="w-full h-40 object-cover"
-              />
-            ) : (
-              <div className="w-full h-40 bg-indigo-50 flex items-center justify-center text-5xl">🏢</div>
-            )}
+            <div className="relative">
+              {b.imageUrl ? (
+                <img src={b.imageUrl} alt={b.name} className="w-full h-40 object-cover" />
+              ) : (
+                <div className="w-full h-40 bg-indigo-50 flex items-center justify-center text-5xl">🏢</div>
+              )}
+              <span className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm text-lg px-2 py-1 rounded-lg shadow-sm">
+                {SECTOR_META[b.sector]?.icon ?? '🏢'}
+              </span>
+            </div>
             <div className="p-4 flex-1 flex flex-col justify-between">
               <div>
                 <h2 className="font-semibold text-gray-800">{b.name}</h2>
