@@ -3,6 +3,59 @@ const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
+// ── Sector images (rotate across businesses) ────────────────────────────────
+
+const SECTOR_IMAGES: Record<string, string[]> = {
+  DIAGNOSTIC: [
+    'https://images.unsplash.com/photo-1579154204601-01588f351e67?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1614308459921-1e5dd8a73576?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1666214280557-f1b5022eb634?w=600&h=400&fit=crop',
+  ],
+  HOSPITAL: [
+    'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1504439468489-c8920d796a29?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=600&h=400&fit=crop',
+  ],
+  BANK: [
+    'https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1601597111158-2fceff292cdc?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1544377193-33dcf4d68fb5?w=600&h=400&fit=crop',
+  ],
+  RESTAURANT: [
+    'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=600&h=400&fit=crop',
+  ],
+  SALON: [
+    'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=600&h=400&fit=crop',
+  ],
+  VEHICLE_SERVICE: [
+    'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1507136566006-cfc505b114fc?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1493238792000-8113da705763?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1615906655593-ad0386982a0f?w=600&h=400&fit=crop',
+  ],
+};
+
 // ── Categories per sector ───────────────────────────────────────────────────
 
 const CATEGORIES: Record<string, { name: string; avg: number }[]> = {
@@ -356,16 +409,26 @@ async function main() {
     const bizList = BUSINESSES[sector];
     const cats    = CATEGORIES[sector];
     const ownerId = owners[sector];
+    const images  = SECTOR_IMAGES[sector];
 
     console.log(`  📂 ${sector} (${bizList.length} businesses, ${cats.length} categories each)`);
 
-    for (const biz of bizList) {
-      // Skip if already exists
+    for (let i = 0; i < bizList.length; i++) {
+      const biz      = bizList[i];
+      const imageUrl = images[i % images.length];
+
       const existing = await prisma.business.findFirst({
         where: { name: biz.name, city: biz.city },
       });
+
       if (existing) {
-        console.log(`    ↪ Skipping: ${biz.name}`);
+        // Update imageUrl if missing
+        if (!existing.imageUrl) {
+          await prisma.business.update({ where: { id: existing.id }, data: { imageUrl } });
+          console.log(`    ↪ Updated image: ${biz.name}`);
+        } else {
+          console.log(`    ↪ Skipping: ${biz.name}`);
+        }
         continue;
       }
 
@@ -376,11 +439,11 @@ async function main() {
           sector: sector as any,
           address: biz.address,
           city: biz.city,
+          imageUrl,
           isActive: true,
         },
       });
 
-      // Create all categories for this business
       await prisma.serviceCategory.createMany({
         data: cats.map((c) => ({
           businessId: business.id,

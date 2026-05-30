@@ -45,28 +45,39 @@ function BusinessesList() {
         </div>
       )}
 
-      <div className="grid gap-4">
+      <div className="grid gap-4 sm:grid-cols-2">
         {businesses.map((b) => (
           <Link
             key={b.id}
             href={`/businesses/${b.id}`}
-            className="bg-white border border-gray-100 rounded-2xl p-5 hover:border-indigo-300 hover:shadow-sm transition flex justify-between items-start"
+            className="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:border-indigo-300 hover:shadow-md transition flex flex-col"
           >
-            <div>
-              <h2 className="font-semibold text-gray-800">{b.name}</h2>
-              <p className="text-sm text-gray-500 mt-0.5">{b.address}, {b.city}</p>
-              <div className="flex gap-2 mt-2 flex-wrap">
-                {b.categories.slice(0, 3).map((c: any) => (
-                  <span key={c.id} className="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">
-                    {c.name}
-                  </span>
-                ))}
-                {b.categories.length > 3 && (
-                  <span className="text-xs text-gray-400">+{b.categories.length - 3} more</span>
-                )}
+            {b.imageUrl ? (
+              <img
+                src={b.imageUrl}
+                alt={b.name}
+                className="w-full h-40 object-cover"
+              />
+            ) : (
+              <div className="w-full h-40 bg-indigo-50 flex items-center justify-center text-5xl">🏢</div>
+            )}
+            <div className="p-4 flex-1 flex flex-col justify-between">
+              <div>
+                <h2 className="font-semibold text-gray-800">{b.name}</h2>
+                <p className="text-sm text-gray-500 mt-0.5">{b.address}, {b.city}</p>
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  {b.categories.slice(0, 3).map((c: any) => (
+                    <span key={c.id} className="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">
+                      {c.name}
+                    </span>
+                  ))}
+                  {b.categories.length > 3 && (
+                    <span className="text-xs text-gray-400">+{b.categories.length - 3} more</span>
+                  )}
+                </div>
               </div>
+              <span className="text-indigo-600 text-sm font-medium mt-3">Join Queue →</span>
             </div>
-            <span className="text-indigo-600 text-sm font-medium mt-1">Join →</span>
           </Link>
         ))}
       </div>
